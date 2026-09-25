@@ -7,8 +7,8 @@ from validacoes import validar_data, validar_hora, validar_texto
 ROXO = "#5506CC"
 AMARELO = "#FFDE5E"
 ESCURO = "#333333"
-CARD_AMARELO = "#5506CC"
-BARRA_AMARELA = "#5506CC"
+CARD_AMARELO = "#AE5AFC"
+BARRA_VERMELHA = "#CC0606"
 CARD_AZUL = "#1E75D1"
 BARRA_AZUL = "#3333FF"
 
@@ -21,14 +21,11 @@ filtro = "todas"
 def criar_card(tarefa):
     if tarefa["concluida"]:
         cor_fundo = CARD_AZUL
-        cor_barra = BARRA_AZUL
         situacao = "Concluída"
     else:
         cor_fundo = CARD_AMARELO
-        cor_barra = BARRA_AMARELA
         situacao = "Pendente"
 
-    
     if tarefa is tarefa_selecionada:
         cor_borda = ROXO
     else:
@@ -37,9 +34,6 @@ def criar_card(tarefa):
     card = tk.Frame(frame_cards, bg=cor_fundo, highlightthickness=3, highlightbackground=cor_borda)
     card.pack(fill="x", padx=10, pady=6)
 
-    barra = tk.Frame(card, bg=cor_barra, width=12)
-    barra.pack(side="left", fill="y")
-
     titulo = tk.Label(card, text=tarefa["texto"], bg=cor_fundo, anchor="w", font=("Arial", 14, "bold"))
     titulo.pack(fill="x", padx=15, pady=(10, 0))
 
@@ -47,7 +41,6 @@ def criar_card(tarefa):
                          bg=cor_fundo, fg="#4D4D4D", anchor="w", font=("Arial", 11))
     subtitulo.pack(fill="x", padx=15, pady=(0, 10))
 
-    # clicar em qualquer parte do card seleciona a tarefa
     card.bind("<Button-1>", lambda evento: selecionar_tarefa(tarefa))
     titulo.bind("<Button-1>", lambda evento: selecionar_tarefa(tarefa))
     subtitulo.bind("<Button-1>", lambda evento: selecionar_tarefa(tarefa))
@@ -80,8 +73,7 @@ def mostrar_tarefas():
         if tarefa["concluida"]:
             concluidas = concluidas + 1
     pendentes = len(tarefas) - concluidas
-    label_resumo.config(text="Total: " + str(len(tarefas)) + "   Pendentes: " + str(pendentes)
-                        + "   Concluídas: " + str(concluidas))
+    label_resumo.config(text="Total: " + str(len(tarefas)) + "   Pendentes: " + str(pendentes) + "   Concluídas: " + str(concluidas))
     frame_cards.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
 
@@ -97,6 +89,7 @@ def mudar_filtro(novo_filtro):
     filtro = novo_filtro
     mostrar_tarefas()
 
+
 def abrir_formulario(tarefa):
     global janela_form, entry_texto, entry_data, entry_hora, var_concluida, tarefa_editando
     tarefa_editando = tarefa
@@ -106,6 +99,7 @@ def abrir_formulario(tarefa):
     janela_form.configure(bg=CARD_AMARELO)
     janela_form.transient(janela)
     janela_form.wait_visibility()
+    janela_form.grab_set()  # trava a janela principal enquanto o formulário está aberto
 
     if tarefa is None:
         janela_form.title("Nova tarefa")
@@ -136,14 +130,12 @@ def abrir_formulario(tarefa):
     tk.Button(botoes, text="Salvar", bg=ROXO, fg="white", width=10, command=salvar_formulario).pack(side="left")
     tk.Button(botoes, text="Cancelar", width=10, command=janela_form.destroy).pack(side="left", padx=10)
 
-    # se for edição, preenche os campos com os dados da tarefa
     if tarefa is not None:
         entry_texto.insert(0, tarefa["texto"])
         entry_data.insert(0, tarefa["data"])
         entry_hora.insert(0, tarefa["hora"])
         var_concluida.set(tarefa["concluida"])
 
-    # Enter salva e Esc fecha
     entry_texto.bind("<Return>", lambda evento: salvar_formulario())
     entry_data.bind("<Return>", lambda evento: salvar_formulario())
     entry_hora.bind("<Return>", lambda evento: salvar_formulario())
@@ -192,6 +184,7 @@ def salvar_formulario():
     mostrar_tarefas()
     label_status.config(text=mensagem)
 
+
 def nova_tarefa():
     abrir_formulario(None)
 
@@ -225,7 +218,6 @@ def sair():
 
 
 def rolar(evento):
-    # roda a rolagem do mouse na lista de tarefas
     if evento.delta > 0:
         canvas.yview_scroll(-1, "units")
     else:
@@ -243,6 +235,7 @@ def criar_botao_menu(texto, cor, comando):
     botao = tk.Button(quadro, text=texto, command=comando, bg="white", relief="flat",
                       anchor="w", font=("Arial", 13))
     botao.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
 
 janela = tk.Tk()
 janela.title("Tasky")
@@ -283,7 +276,6 @@ criar_botao_menu("Excluir tarefa", "white", excluir_tarefa_selecionada)
 criar_botao_menu("Concluídas", "#D5E8D4", lambda: mudar_filtro("concluidas"))
 criar_botao_menu("Pendentes", "#F8CECC", lambda: mudar_filtro("pendentes"))
 criar_botao_menu("Todas", "#DAE8FC", lambda: mudar_filtro("todas"))
-
 
 area_cards = tk.Frame(corpo, bg="white")
 area_cards.pack(side="left", fill="both", expand=True, padx=(20, 0))
